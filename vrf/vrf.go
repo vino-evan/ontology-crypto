@@ -16,7 +16,7 @@
  * along with The ontology.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//This package is a wrapper of verifiable random function using curve secp256r1.
+// This package is a wrapper of verifiable random function using curve secp256r1.
 package vrf
 
 import (
@@ -25,7 +25,8 @@ import (
 	"errors"
 	"hash"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+
 	"github.com/ontio/ontology-crypto/ec"
 	"github.com/ontio/ontology-crypto/keypair"
 	"github.com/ontio/ontology-crypto/sm3"
@@ -36,7 +37,7 @@ var (
 	ErrEvalVRF         = errors.New("failed to evaluate vrf")
 )
 
-//Vrf returns the verifiable random function evaluated m and a NIZK proof
+// Vrf returns the verifiable random function evaluated m and a NIZK proof
 func Vrf(pri keypair.PrivateKey, msg []byte) (vrf, nizk []byte, err error) {
 	isValid := ValidatePrivateKey(pri)
 	if !isValid {
@@ -56,7 +57,7 @@ func Vrf(pri keypair.PrivateKey, msg []byte) (vrf, nizk []byte, err error) {
 	return
 }
 
-//Verify returns true if vrf and nizk is correct for msg
+// Verify returns true if vrf and nizk is correct for msg
 func Verify(pub keypair.PublicKey, msg, vrf, nizk []byte) (bool, error) {
 	isValid := ValidatePublicKey(pub)
 	if !isValid {

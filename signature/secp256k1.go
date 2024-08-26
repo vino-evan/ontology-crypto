@@ -3,20 +3,35 @@ package signature
 import (
 	"errors"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+
 	"github.com/ontio/ontology-crypto/ec"
 )
 
 func Secp256k1Sign(pri *ec.PrivateKey, hash []byte) ([]byte, error) {
-	return btcec.SignCompact(btcec.S256(), (*btcec.PrivateKey)(pri.PrivateKey), hash, false)
+	key, err := pri.PrivateKey.ECDH()
+	if err != nil {
+		return nil, err
+	}
+	privateKey, _ := btcec.PrivKeyFromBytes(key.Bytes())
+	return ecdsa.SignCompact(privateKey, hash, false)
 }
 
 func Secp256k1Verify(pub *ec.PublicKey, hash []byte, sig []byte) bool {
-	recKey, _, err := btcec.RecoverCompact(btcec.S256(), sig, hash)
+	recKey, _, err := ecdsa.RecoverCompact(sig, hash)
 	if err != nil {
 		return false
 	}
-	return recKey.IsEqual((*btcec.PublicKey)(pub.PublicKey))
+	publicKey, err := pub.PublicKey.ECDH()
+	if err != nil {
+		return false
+	}
+	parsePubKey, err := btcec.ParsePubKey(publicKey.Bytes())
+	if err != nil {
+		return false
+	}
+	return recKey.IsEqual(parsePubKey)
 }
 
 func ConvertToEthCompatible(sig []byte) ([]byte, error) {
